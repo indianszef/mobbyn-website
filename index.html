@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOBBYN DASHBOARD v1.0</title>
+    <title>MOBBYN DASHBOARD v2.0</title>
     <style>
+        /* IMPORT FONTÓW */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
         /* RESET I BAZA */
         * {
             box-sizing: border-box;
@@ -12,226 +15,347 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #0d0d0d;
+            background: #0b0b0b;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0b0b0b 100%);
             color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* GŁÓWNY KONTENER (ZAWARTEJ STRONY) */
-        .dashboard-container {
-            display: flex;
-            flex-direction: row;
-            height: 100%;
-            opacity: 0.3; /* Przygaszona pod nakładką */
-            transition: opacity 0.5s ease;
-        }
-
-        .dashboard-container.unlocked {
-            opacity: 1;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 250px;
-            background: #111;
-            border-right: 1px solid #333;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #7289da;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-        .menu-item {
-            padding: 15px;
-            color: #999;
-            cursor: pointer;
-            transition: 0.2s;
-            border-radius: 6px;
-            margin-bottom: 5px;
-        }
-        .menu-item:hover, .menu-item.active {
-            background: #222;
-            color: #fff;
-        }
-
-        /* GŁÓWNA ZAWARTOŚĆ */
-        .main-area {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 20px;
-        }
-
-        .grid-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .card h3 { margin-top: 0; color: #7289da; font-size: 14px; text-transform: uppercase; }
-        .card .value { font-size: 28px; font-weight: bold; }
-        .card .sub { font-size: 12px; color: #666; margin-top: 5px; }
-
-        .server-list {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .server-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid #222;
-        }
-        .server-row:last-child { border-bottom: none; }
-        .status-ok { color: #4cd964; }
-        .status-err { color: #e84a5f; }
-
-        /* OVERLAY (BLOKADA) */
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #0d0d0d;
-            z-index: 99999;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        .auth-card {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        /* TŁO ANIMOWANE (BŁĘDNIEK) */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .orb-1 { width: 300px; height: 300px; background: #5865F2; top: -50px; left: -50px; }
+        .orb-2 { width: 250px; height: 250px; background: #eb459e; bottom: -50px; right: -50px; animation-delay: 2s; }
+        .orb-3 { width: 200px; height: 200px; background: #57f287; bottom: 20%; left: 20%; animation-delay: 4s; opacity: 0.2; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 40px); }
         }
 
-        #discord-btn {
-            background-color: #5865F2;
+        /* OVERLAY LOGOWANIA */
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 10;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo-area {
+            margin-bottom: 25px;
+        }
+        .logo-area h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .logo-area p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .discord-btn {
+            background: #5865F2;
             color: white;
             border: none;
-            padding: 16px 24px;
-            border-radius: 4px;
-            font-size: 16px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        #discord-btn:hover { background-color: #4752c4; }
+        .discord-btn:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+        }
+        .discord-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-text {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            min-height: 20px;
+        }
+
+        /* GŁÓWNY DASHBOARD (UKRYTY) */
+        .dashboard {
+            display: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .dashboard.active {
+            opacity: 1;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            height: 100%;
+            background: rgba(17, 17, 17, 0.6);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 40px;
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-logo span { color: #5865F2; }
         
-        .status-msg { margin-top: 15px; color: #666; font-size: 13px; }
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+        .nav-item.active {
+            border-left: 3px solid #5865F2;
+        }
+
+        /* MAIN CONTENT */
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #333;
+            background-size: cover;
+            border: 2px solid #5865F2;
+        }
+        .user-info h4 { margin: 0; font-size: 15px; }
+        .user-info span { font-size: 12px; color: #666; }
+
+        /* KARTY */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--color), transparent);
+        }
+        .stat-card h3 { margin: 0 0 10px 0; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .val { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .stat-card .trend { font-size: 12px; }
+        .trend.up { color: #57f287; }
+        .trend.down { color: #ed4245; }
+
+        /* LISTA SERWERÓW */
+        .server-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0;
+        }
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
+        .server-row {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: 0.2s;
+        }
+        .server-row:last-child { border-bottom: none; }
+        .server-row:hover { background: rgba(255, 255, 255, 0.02); }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-online { background: rgba(87, 242, 135, 0.1); color: #57f287; }
+        .status-offline { background: rgba(237, 66, 67, 0.1); color: #ed4245; }
+        .status-busy { background: rgba(250, 166, 26, 0.1); color: #faa61a; }
 
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY LOGOWANIA -->
-    <div id="login-overlay">
-        <div class="auth-card">
-            <h2>MOBBYN SYSTEM</h2>
-            <p style="color: #999;">Aby wyświetlić pełny Dashboard, zaloguj się przez Discord.</p>
-            
-            <button id="discord-btn">
-                Zaloguj się przez Discord
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+
+    <!-- OVERLAY -->
+    <div class="auth-container" id="auth-box">
+        <div class="glass-card">
+            <div class="logo-area">
+                <h1>MOBBYN</h1>
+                <p>Pełny dostęp do systemu</p>
+            </div>
+            <button id="discord-btn" class="discord-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.37-.444.864-.608 1.269-1.564-.235-3.136-.235-4.696 0-.164-.407-.4-1.013-.61-1.269a.077.077 0 0 0-.079-.037 19.736 19.736 0 0 0-4.885 1.515.073.073 0 0 0-.032.027C.533 9.026-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.227-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.215.074.074 0 0 1 .077-.01c3.929 1.793 8.14 1.793 12.071 0a.074.074 0 0 1 .078.01c.12.076.24.154.373.215a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.704.788 1.37 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.075.075 0 0 0-.031-.027zM8.02 15.33c-1.357 0-2.478-1.241-2.478-2.76 0-1.518 1.09-2.759 2.478-2.759 1.387 0 2.498 1.232 2.478 2.76 0 1.518-1.09 2.76-2.478 2.76zm7.977 0c-1.357 0-2.478-1.241-2.478-2.76 0-1.518 1.09-2.759 2.478-2.759 1.387 0 2.498 1.232 2.478 2.76 0 1.518-1.09 2.76-2.478 2.76z"/></svg>
+                Zaloguj się
             </button>
-            <div id="status" class="status-msg">Oczekiwanie na autoryzację...</div>
+            <div id="status" class="status-text">Gotowy do autoryzacji</div>
         </div>
     </div>
 
-    <!-- PEŁNA STRONA (DASHBOARD) -->
-    <div class="dashboard-container" id="dashboard">
-        <!-- SIDEBAR -->
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboard-view">
         <div class="sidebar">
-            <div class="logo">MOBBYN</div>
-            <div class="menu-item active">📊 Statystyki</div>
-            <div class="menu-item">🖥️ Serwery</div>
-            <div class="menu-item">🔔 Alert Log</div>
-            <div class="menu-item">⚙️ Ustawienia</div>
-            <div class="menu-item" style="margin-top: auto; color: #e84a5f;">🔓 Wyloguj</div>
+            <div class="sidebar-logo"><span>●</span> MOBBYN</div>
+            <div class="nav-item active">📊 Statystyki</div>
+            <div class="nav-item">🖥️ Serwery</div>
+            <div class="nav-item">🔔 Logi</div>
+            <div class="nav-item">⚙️ Konfiguracja</div>
+            <div class="nav-item" style="margin-top: auto; color: #ed4245;">🔓 Wyloguj</div>
         </div>
 
-        <!-- MAIN CONTENT -->
-        <div class="main-area">
-            <div class="header">
-                <h1 style="margin: 0;">Dashboard Główny</h1>
-                <div style="text-align: right;">
-                    <div id="user-display" style="font-weight: bold;">Gość</div>
-                    <div style="font-size: 12px; color: #666;" id="date-display"></div>
+        <div class="content">
+            <div class="top-bar">
+                <h2 style="margin: 0; font-weight: 600;">Panel Główny</h2>
+                <div class="user-profile">
+                    <div style="text-align: right;">
+                        <h4 id="user-name">Gość</h4>
+                        <span id="user-id">ID: 000000</span>
+                    </div>
+                    <div class="avatar" id="user-avatar"></div>
                 </div>
             </div>
 
-            <div class="grid-stats">
-                <div class="card">
-                    <h3>Aktywni Użytkownicy</h3>
-                    <div class="value">1,245</div>
-                    <div class="sub">↑ 12% vs wczoraj</div>
+            <div class="grid">
+                <div class="stat-card" style="--color: #5865F2;">
+                    <h3>Użytkownicy</h3>
+                    <div class="val">1,245</div>
+                    <div class="trend up">↑ 12% wzrost</div>
                 </div>
-                <div class="card">
-                    <h3>Czas Uptime</h3>
-                    <div class="value">99.9%</div>
-                    <div class="sub">Brak awarii od 14 dni</div>
+                <div class="stat-card" style="--color: #57f287;">
+                    <h3>Uptime</h3>
+                    <div class="val">99.9%</div>
+                    <div class="trend">System stabilny</div>
                 </div>
-                <div class="card">
-                    <h3>Łączny Przepływ</h3>
-                    <div class="value">45.2 TB</div>
-                    <div class="sub">Aktualizacja w czasie rzeczywistym</div>
+                <div class="stat-card" style="--color: #faa61a;">
+                    <h3>Ping Globalny</h3>
+                    <div class="val">24ms</div>
+                    <div class="trend down">↓ Zoptymalizowano</div>
                 </div>
             </div>
 
-            <div class="server-list">
-                <h3 style="margin-top: 0; color: #7289da;">Status Serwerów</h3>
+            <div class="server-panel">
+                <div class="panel-header">Status Clusterów</div>
                 <div class="server-row">
-                    <span>🇵🇱 Warszawa Node 1</span>
-                    <span class="status-ok">Online (12ms)</span>
+                    <div>
+                        <div style="font-weight: 500;">🇵🇱 Warszawa Main</div>
+                        <div style="font-size: 12px; color: #666;">Node 1 • 12ms</div>
+                    </div>
+                    <span class="status-badge status-online">Online</span>
                 </div>
                 <div class="server-row">
-                    <span>🇩🇪 Berlin Node 2</span>
-                    <span class="status-ok">Online (45ms)</span>
+                    <div>
+                        <div style="font-weight: 500;">🇩🇪 Berlin Backup</div>
+                        <div style="font-size: 12px; color: #666;">Node 2 • 45ms</div>
+                    </div>
+                    <span class="status-badge status-online">Online</span>
                 </div>
                 <div class="server-row">
-                    <span>🇺🇸 US East Coast</span>
-                    <span class="status-err">Maintenance</span>
-                </div>
-            </div>
-            
-            <div style="margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <h3 style="margin-top:0; color: #7289da;">System Logi</h3>
-                <div style="font-size: 13px; color: #666; font-family: monospace;">
-                    [17:55:00] System zainicjowany.<br>
-                    [17:55:02] Baza danych połączona.<br>
-                    [17:55:05] Modul alertów aktywny.<br>
-                    [17:57:00] Oczekiwanie na dane użytkownika...
+                    <div>
+                        <div style="font-weight: 500;">🇺🇸 US East Coast</div>
+                        <div style="font-size: 12px; color: #666;">Node 3 • Maintenance</div>
+                    </div>
+                    <span class="status-badge status-busy">Busy</span>
                 </div>
             </div>
         </div>
@@ -240,87 +364,84 @@
     <script>
         // KONFIGURACJA
         const CONFIG = {
-            // ZMIEŃ NA SWOJE DANE
             CLIENT_ID: '1537855915666186290',
             SECRET: 'acbzTlfRu0EtTXHjbuX6mL6TmQy-WCr9',
-            // Webhook do alertów
-            WEBHOOK: 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR',
-            PROXY_GET: 'https://api.allorigins.win/raw?url=',
-            PROXY_POST: 'https://corsproxy.io/?' 
+            // Używam bardziej stabilnego proxy dla POST i GET
+            PROXY_BASE: 'https://corsproxy.io/?',
+            WEBHOOK: 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'
         };
 
-        const overlay = document.getElementById('login-overlay');
-        const dashboard = document.getElementById('dashboard');
+        const authBox = document.getElementById('auth-box');
+        const dashboard = document.getElementById('dashboard-view');
         const btn = document.getElementById('discord-btn');
         const status = document.getElementById('status');
-        const userDisplay = document.getElementById('user-display');
-        const dateDisplay = document.getElementById('date-display');
+        const userName = document.getElementById('user-name');
+        const userId = document.getElementById('user-id');
+        const userAvatar = document.getElementById('user-avatar');
 
-    dateDisplay.textContent = new Date().toLocaleString();
+    // Funkcja logowania
+    btn.addEventListener('click', () => {
+        status.textContent = "Przekierowywanie...";
+        const redirectUri = encodeURIComponent(window.location.href);
+        const authUrl = `https://discord.com/oauth2/authorize?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
+        window.location.href = authUrl;
+    });
 
-    // Funkja odblokowania i załadowania strony
+    // Funkcja odblokowania
     function unlockSystem(user) {
-        status.textContent = "Autoryzacja zatwierdzona.";
-        status.style.color = '#4cd964';
-        
-        // Ukryj overlay
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; }, 500);
-        
-        // Pokaż dashboard
-        dashboard.classList.add('unlocked');
-        
-        // Ustaw dane użytkownika w UI
-        if(user && user.username) {
-            userDisplay.textContent = user.username;
-            userDisplay.style.color = '#7289da';
+        status.textContent = "Dostęp przyznany";
+        status.style.color = "#57f287";
+        btn.style.display = 'none';
+
+        // Animacja przejścia
+        authBox.style.opacity = '0';
+        authBox.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            authBox.style.display = 'none';
+            dashboard.style.display = 'flex';
+            // Małe opóźnienie dla animacji opacity
+            setTimeout(() => {
+                dashboard.classList.add('active');
+            }, 50);
+        }, 500);
+
+        // Ustawienie danych
+        userName.textContent = user.username;
+        userId.textContent = 'ID: ' + user.id;
+        if (user.avatar) {
+            userAvatar.style.backgroundImage = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+        } else {
+            // Domyślny awatar
+            userAvatar.style.backgroundImage = `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
         }
 
         // Wyślij alert
-        sendAlert(user);
-    }
-
-    function sendAlert(user) {
         fetch(CONFIG.WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 embeds: [{
                     title: '🟢 DOSTĘP PRZYZNANY',
-                    description: `**Użytkownik:** ${user.username}\n**ID:** ${user.id}\n**Status:** Pełny Dashboard`,
+                    description: `**Użytkownik:** ${user.username}#${user.discriminator}\n**ID:** ${user.id}`,
                     color: 5763719,
-                    timestamp: new Date().toISOString()
+                    footer: { text: 'MOBBYN DASHBOARD v2.0' }
                 }]
             })
         }).catch(console.error);
     }
 
-    // Logowanie
-    btn.addEventListener('click', () => {
-        status.textContent = "Przekierowywanie do Discord...";
-        const redirectUri = encodeURIComponent(window.location.href);
-        const authUrl = `https://discord.com/oauth2/authorize?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
-        window.location.href = authUrl;
-    });
-
-    // Obsługa powrotu
+    // Obsługa powrotu z Discord
     async function checkLogin() {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
-        const error = params.get('error');
-
-        if (error) {
-            status.textContent = "Anulowano logowanie.";
-            return;
-        }
 
         if (code) {
             try {
                 btn.disabled = true;
-                status.textContent = "Pobieranie danych...";
+                status.textContent = "Pobieranie tokena...";
 
-                // 1. Token
-                const tokenReq = await fetch(CONFIG.PROXY_POST + encodeURIComponent("https://discord.com/oauth2/token"), {
+                // Pobieranie tokena
+                const tokenReq = await fetch(CONFIG.PROXY_BASE + encodeURIComponent("https://discord.com/api/oauth2/token"), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
@@ -333,36 +454,31 @@
                 });
 
                 const tokenData = await tokenReq.json();
-                const accessToken = tokenData.access_token;
+                if (!tokenData.access_token) throw new Error('Brak tokena');
 
-                // 2. User
-                const userReq = await fetch(CONFIG.PROXY_GET + encodeURIComponent("https://discord.com/api/users/@me"), {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                status.textContent = "Pobieranie profilu...";
+
+                // Pobieranie danych użytkownika
+                const userReq = await fetch(CONFIG.PROXY_BASE + encodeURIComponent("https://discord.com/api/users/@me"), {
+                    headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
                 });
 
                 const userData = await userReq.json();
-                
-                // Wyczyść URL
+                unlockSystem(userData);
                 window.history.replaceState({}, document.title, window.location.pathname);
 
-                unlockSystem(userData);
-
             } catch (e) {
-                status.textContent = "Błąd połączenia: " + e.message;
+                status.textContent = "Błąd: " + e.message;
+                status.style.color = "#ed4245";
                 btn.disabled = false;
-                console.error(e);
+                btn.style.display = 'flex';
             }
         }
     }
 
-    // Start
     if (window.location.search.includes('code=')) {
         checkLogin();
     }
     </script>
 </body>
 </html>
-
-
-
-
