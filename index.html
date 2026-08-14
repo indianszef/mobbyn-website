@@ -16,6 +16,7 @@
    background: #080808;
    color: #fff;
    line-height: 1.6;
+   overflow: hidden; /* Ukrywa scrollowanie gdy ekran logowania jest aktywny */
  }
 
  nav {
@@ -216,50 +217,59 @@
    .hero h1 { letter-spacing: 5px; }
  }
 
- /* LOGIN SCREEN (Dark Mode) */
- #login-screen {
-   display: flex;
+ /* LOGIN SCREEN (Absolute Overlay - Blocks everything) */
+ #login-overlay {
    position: fixed;
    top: 0;
    left: 0;
    width: 100%;
    height: 100%;
-   background: rgba(8, 8, 8, 0.95);
-   z-index: 9999;
+   background: rgba(8, 8, 8, 0.98);
+   z-index: 9999; /* High z-index to cover nav and content */
+   display: flex;
    justify-content: center;
    align-items: center;
    opacity: 1;
-   transition: opacity 0.3s ease;
+   transition: opacity 0.4s ease;
+   pointer-events: auto; /* Blocks clicks on underlying content */
  }
 
- #login-screen.hidden {
+ #login-overlay.hidden {
    opacity: 0;
-   pointer-events: none;
+   pointer-events: none; /* Allows clicks through when hidden */
  }
 
  .login-window {
    background: #111;
    border: 1px solid #252525;
-   width: 300px;
-   box-shadow: 0 0 20px rgba(0,0,0,0.8);
-   border-radius: 8px;
+   width: 320px;
+   box-shadow: 0 0 30px rgba(0,0,0,0.9);
+   border-radius: 12px;
    overflow: hidden;
+   animation: popIn 0.3s ease-out;
+ }
+
+ @keyframes popIn {
+   0% { transform: scale(0.9); opacity: 0; }
+   100% { transform: scale(1); opacity: 1; }
  }
 
  .login-title-bar {
    background: #0b0b0b;
    color: #fff;
-   padding: 10px 15px;
+   padding: 12px 15px;
    font-weight: bold;
    font-size: 14px;
    border-bottom: 1px solid #222;
    display: flex;
    justify-content: space-between;
    cursor: pointer;
+   user-select: none;
  }
  
  .login-title-bar span:last-child {
    font-weight: bold;
+   font-size: 16px;
  }
 
  .login-body {
@@ -277,6 +287,7 @@
    transition: 0.2s;
    width: 100%;
    margin-top: 10px;
+   font-size: 14px;
  }
 
  .login-btn:hover {
@@ -286,6 +297,7 @@
  .login-btn:disabled {
    background: #555;
    cursor: not-allowed;
+   color: #888;
  }
 
  .login-status {
@@ -300,22 +312,22 @@
 
 <body>
 
-<!-- LOGIN SCREEN (Dark Mode) -->
-<div id="login-screen">
+<!-- LOGIN OVERLAY (Blocks content) -->
+<div id="login-overlay">
     <div class="login-window">
         <div class="login-title-bar" id="close-login-bar">
-            <span>MOBBYN Login</span>
+            <span>MOBBYN SYSTEM</span>
             <span>X</span>
         </div>
         <div class="login-body">
             <p style="margin-bottom: 15px; color: #aaa;">Zaloguj się przez Discorda</p>
-            <button id="login-btn" class="login-btn">LOGOWANIE</button>
+            <button id="login-btn" class="login-btn">ZALOGUJ SIĘ</button>
             <div id="login-status" class="login-status"></div>
         </div>
     </div>
 </div>
 
-<!-- NAV -->
+<!-- MAIN CONTENT (Initially hidden by overlay) -->
 <nav>
  <div class="logo">MOBBYN</div>
  <ul>
@@ -429,7 +441,7 @@
  <h2 class="title">DOŁĄCZ DO NAS</h2>
  <p class="about">
  Chcesz zostać częścią MOBBYN?
- Dołącz do naszego Discorda i skontaktuj się z organizacją.
+ Dołącz do naszego Discorda i stwórz ticket.
  </p>
  <br>
  <a class="btn" href="https://discord.gg/pYtRDADmc" target="_blank" rel="noopener noreferrer">DOŁĄCZ DO DISCORDA</a>
@@ -444,22 +456,24 @@
 <script>
   // Konfiguracja
   // UWAGA: Wklej tutaj SWÓJ Client Secret z Discord Developer Portal
-  const CLIENT_SECRET = 'TWOJ_SECRET'; 
+  const CLIENT_SECRET = 'acbzTlfRu0EtTXHjbuX6mL6TmQy-WCr9'; 
   const DISCORD_CLIENT_ID = '1537855915666186290'; 
   const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'; 
 
   // Elementy DOM
-  const loginScreen = document.getElementById('login-screen');
+  const loginOverlay = document.getElementById('login-overlay');
   const loginBtn = document.getElementById('login-btn');
   const loginStatus = document.getElementById('login-status');
   const closeBar = document.getElementById('close-login-bar');
 
-  // Funkcja zamykająca ekran logowania
-  function hideLoginScreen() {
-      loginScreen.classList.add('hidden');
+  // Funkcja odblokowująca stronę
+  function unlockPage() {
+      loginOverlay.classList.add('hidden');
+      // Przywróć scrollowanie strony po ukryciu overlay
       setTimeout(() => {
-          loginScreen.style.display = 'none';
-      }, 300);
+          loginOverlay.style.display = 'none';
+          document.body.style.overflow = 'auto';
+      }, 400);
   }
 
   // Wyślij alert na Webhook
@@ -496,11 +510,11 @@
 
   loginBtn.addEventListener('click', loginWithDiscord);
   
-  // Obsługa kliknięcia X (zamykanie ekranu + LOGOWANIE FAKTU WEJŚCIA)
+  // Obsługa kliknięcia X (ZAMYKA EKRAN I BLOKUJE STRONĘ NA NOWO, DOKŁADNIE TAK SAMO JAK ZALOGOWANIE)
   closeBar.addEventListener('click', async () => {
-      hideLoginScreen();
-      // Wyślij log, że ktoś wszedł na stronę
-      await sendAlert("👁️ Wejście na stronę", "Użytkownik zamknął ekran logowania i przeszedł dalej.");
+      unlockPage();
+      // Logujemy fakt, że ktoś zamknął ekran i wszedł na stronę
+      await sendAlert("👁️ Wejście na stronę", "Użytkownik zamknął ekran logowania (kliknął X).");
   });
 
   // Obsługa zwrotu kodu z Discorda
@@ -552,7 +566,9 @@
               
               // Sukces
               loginStatus.textContent = "Zalogowano pomyślnie!";
-              setTimeout(hideLoginScreen, 500);
+              
+              // Odblokuj stronę po krótkim opóźnieniu
+              setTimeout(unlockPage, 500);
               
               // Dodaj informację o zalogowanym użytkowniku
               const userInfo = document.createElement('div');
@@ -579,20 +595,19 @@
   }
 
   // Start - sprawdź czy jesteśmy po callbacku
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", () => {
     if (new URLSearchParams(window.location.search).has('code')) {
       handleDiscordCallback();
     } else {
-      // Opcjonalnie: Wyślij log, że ktoś wszedł na stronę (Auto-login log)
-      // Możesz to odkomentować, jeśli chcesz logować KAŻDEGO wejścia
-      // sendAlert("👁️ Nowa sesja", "Użytkownik odwiedził stronę.");
+        // Upewnij się, że overlay jest widoczny i blokuje
+        loginOverlay.style.display = 'flex';
+        loginOverlay.classList.remove('hidden');
     }
   });
 </script>
 
 </body>
 </html>
-
 
 
 
