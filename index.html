@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nightwatch Control</title>
+    <style>
+        /* RESET & BASE */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0b0b0b;
+            color: #b9bbbe;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* CONTAINER GŁÓWNY */
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #121212;
+            border-radius: 12px;
+            border: 1px solid #1f1f1f;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background-color: #181818;
+            padding: 20px 30px;
+            border-bottom: 1px solid #1f1f1f;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .bot-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #5865F2, #4752c4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.3);
+            flex-shrink: 0;
+        }
+
+        .bot-info h1 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .bot-status {
+            font-size: 13px;
+            color: #23a559;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #23a559;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #23a559;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            padding: 30px;
+            flex-grow: 1;
+        }
+
+        /* STATS GRID */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #252525;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #72767d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* SERVERS LIST */
+        .section-title {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .server-card {
+            background-color: #1a1a1a;
+            border: 1px solid #252525;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .server-card:hover {
+            background-color: #222;
+            border-color: #5865F2;
+            transform: translateY(-2px);
+        }
+
+        .server-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .server-name {
+            font-weight: bold;
+            color: #ddd;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* LOGS FOOTER */
+        .logs-panel {
+            background-color: #0a0a0a;
+            border-top: 1px solid #1f1f1f;
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            color: #888;
+        }
+        .log-entry span.time { color: #555; margin-right: 8px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- HEADER Z BOTEM -->
+        <div class="header">
+            <div class="bot-avatar">👁️</div>
+            <div class="bot-info">
+                <h1>NIGHTWATCH</h1>
+                <div class="bot-status">
+                    <div class="status-dot"></div>
+                    Online • Mock Mode
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- STATYSTYKI -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Serwery</div>
+                    <div class="stat-value">42</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Użytkownicy</div>
+                    <div class="stat-value">18,204</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ping</div>
+                    <div class="stat-value">14ms</div>
+                </div>
+            </div>
+
+            <!-- LISTA SERWERÓW -->
+            <div class="section-title">
+                <span>📂</span> Podłączone Serwery
+            </div>
+            <div class="servers-grid" id="server-list">
+                <!-- Generowane przez JS -->
+            </div>
+        </div>
+
+        <!-- LOGI -->
+        <div class="logs-panel" id="logs">
+            <!-- Logi -->
+        </div>
+    </div>
+
+    <script>
+        // DANE MOCK (FAKE)
+        const mockServers = [
+            { name: "Główny Serwer", icon: "🏰", color: "#e67e22" },
+            { name: "Testowy", icon: "🧪", color: "#2ecc71" },
+            { name: "Gaming Zone", icon: "🎮", color: "#9b59b6" },
+            { name: "Off-Topic", icon: "💬", color: "#3498db" },
+            { name: "Support", icon: "🆘", color: "#e74c3c" },
+            { name: "Archives", icon: "📦", color: "#95a5a6" }
+        ];
+
+        // RENDEROWANIE SERWERÓW
+        function renderServers() {
+            const container = document.getElementById('server-list');
+            mockServers.forEach(server => {
+                const div = document.createElement('div');
+                div.className = 'server-card';
+                div.innerHTML = `
+                    <div class="server-icon" style="background-color: ${server.color}">${server.icon}</div>
+                    <div class="server-name">${server.name}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // LOGI
+        function addLog(msg) {
+            const time = new Date().toLocaleTimeString('pl-PL', {hour12: false});
+            const logContainer = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="time">[${time}]</span> ${msg}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // START
+        renderServers();
+        addLog("System started in Mock Mode.");
+        addLog("Loaded 6 mock servers.");
+        addLog("Connection established.");
+
+    </script>
+</body>
+</html>
