@@ -262,7 +262,7 @@
   <h2 class="title">O NAS</h2>
 
   <p class="about">
-    MOBBYN to zgrana bojówka działająca w świecie FiveM.
+    MOBBYN to zgrana ekipa działająca w świecie FiveM.
     Liczy się lojalność, aktywność, dyscyplina i dobra współpraca.
     Każdy członek ma swoje miejsce, obowiązki oraz określoną pozycję
     w strukturze organizacji.
@@ -292,42 +292,34 @@
   <div class="ranks">
     <div class="rank">
       Rekrut
-      <span>Początek drogi</span>
     </div>
 
     <div class="rank">
       Młodszy Bojówkarz
-      <span>Podstawowa ranga</span>
     </div>
 
     <div class="rank">
       Bojówkarz
-      <span>Pełnoprawny członek</span>
     </div>
 
     <div class="rank">
       Doświadczony Bojówkarz
-      <span>Doświadczony członek</span>
     </div>
 
     <div class="rank">
       Elita
-      <span>Wysoka ranga</span>
     </div>
 
     <div class="rank">
       Pro
-      <span>Weteran organizacji</span>
     </div>
 
     <div class="rank">
       Lewa Ręka
-      <span>Ścisłe kierownictwo</span>
     </div>
 
     <div class="rank">
       Prawa Ręka
-      <span>Najwyższe zaufanie</span>
     </div>
 
     <div class="rank">
@@ -400,5 +392,40 @@
   © 2026 MOBBYN — Organizacja FiveM
 </footer>
 
+<script>
+  // Webhook URL
+  const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR';
+
+  // Funkcja wysyłająca alert
+  async function sendSystemAlert(message, level = 'info') {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: message,
+          embeds: [{
+            title: 'SYSTEM ALERT',
+            description: message,
+            color: level === 'error' ? 16711680 : (level === 'success' ? 3066999 : 5763719),
+            timestamp: new Date().toISOString(),
+            footer: { text: 'MOBBYN System' }
+          }]
+        })
+      });
+      console.log('Alert wysłany');
+    } catch (error) {
+      console.error('Błąd wysyłania alertu:', error);
+    }
+  }
+
+  // Przykład: Wyślij alert po załadowaniu strony
+  document.addEventListener('DOMContentLoaded', () => {
+    sendSystemAlert('Strona MOBBYN została załadowana.', 'success');
+  });
+</script>
+
+
+  
 </body>
 </html>
