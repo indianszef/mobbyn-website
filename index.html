@@ -376,12 +376,13 @@
 <section id="gallery">
   <h2 class="title">GALERIA</h2>
   <div class="gallery">
-    <div class="photo">SCREEN #1</div>
-    <div class="photo">SCREEN #2</div>
-    <div class="photo">SCREEN #3</div>
-    <div class="photo">SCREEN #4</div>
-    <div class="photo">SCREEN #5</div>
-    <div class="photo">SCREEN #6</div>
+    <!-- Tutaj wklej zdjęcia -->
+    <div class="photo"><img src="URL_ZDJECIA_1" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
+    <div class="photo"><img src="URL_ZDJECIA_2" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
+    <div class="photo"><img src="URL_ZDJECIA_3" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
+    <div class="photo"><img src="URL_ZDJECIA_4" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
+    <div class="photo"><img src="URL_ZDJECIA_5" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
+    <div class="photo"><img src="URL_ZDJECIA_6" alt="Zdjęcie" style="max-height: 100%; max-width: 100%;"></div>
   </div>
 </section>
 
@@ -432,12 +433,6 @@
     </div>
 </div>
 
-<!-- MAIN CONTENT (Domyślnie ukryte) -->
-<div id="main-content" style="display: none;">
-    <!-- Tutaj jest cała treść strony, ale musimy ją przenieść lub ukryć -->
-    <!-- Aby zachować strukturę, ukrywamy body i pokazujemy main-content -->
-</div>
-
 <script>
   // Konfiguracja
   const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'; 
@@ -447,7 +442,6 @@
   const loginScreen = document.getElementById('login-screen');
   const loginBtn = document.getElementById('login-btn');
   const loginStatus = document.getElementById('login-status');
-  const mainContent = document.querySelector('body > *:not(#login-screen):not(#main-content)'); // Złap wszystko oprócz logowania
 
   // Logowanie przez Discord
   function loginWithDiscord() {
