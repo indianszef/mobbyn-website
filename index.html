@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOBBYN DASHBOARD v3.0 (CORRECTED)</title>
+    <title>MOBBYN DASHBOARD v3.1 (TOKEN FIX)</title>
     <style>
         /* IMPORT FONTÓW */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -95,6 +95,17 @@
         .status-online { background: rgba(87, 242, 135, 0.1); color: #57f287; }
         .status-offline { background: rgba(237, 66, 67, 0.1); color: #ed4245; }
         .status-busy { background: rgba(250, 166, 26, 0.1); color: #faa61a; }
+        
+        /* Token Debug */
+        .token-input {
+            width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 6px; color: #fff; margin-bottom: 10px; font-size: 12px;
+        }
+        .manual-btn {
+            background: #2f3136; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px;
+        }
+        .manual-btn:hover { background: #4f4f4f; }
+        .debug-area { display: none; margin-top: 15px; text-align: left; }
+        .debug-area.active { display: block; }
     </style>
 </head>
 <body>
@@ -116,6 +127,12 @@
             </button>
             <div id="status" class="status-text">Gotowy do autoryzacji</div>
             <div id="error-log" style="margin-top: 5px; font-size: 11px; color: #555;"></div>
+            
+            <button onclick="toggleDebug()" class="manual-btn">Debug Token</button>
+            <div id="debug-area" class="debug-area">
+                <textarea id="token-input" class="token-input" rows="3" placeholder="Wklej token tutaj..."></textarea>
+                <button onclick="unlockWithToken()" class="manual-btn">Zatwierdź</button>
+            </div>
         </div>
     </div>
 
@@ -183,12 +200,8 @@
         const CONFIG = {
             CLIENT_ID: '1537855915666186290',
             SECRET: 'acbzTlfRu0EtTXHjbuX6mL6TmQy-WCr9',
-            // Zmieniona kolejność: corsproxy.io jest teraz pierwszy
-            PROXY_LIST: [
-                'https://corsproxy.io/?', 
-                'https://api.allorigins.win/raw?url=',
-                'https://cors-anywhere.herokuapp.com/'
-            ],
+            // Używamy tylko corsproxy.io dla pewności
+            PROXY_LIST: ['https://corsproxy.io/?'],
             WEBHOOK: 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'
         };
 
@@ -200,122 +213,17 @@
         const userName = document.getElementById('user-name');
         const userId = document.getElementById('user-id');
         const userAvatar = document.getElementById('user-avatar');
+        const debugArea = document.getElementById('debug-area');
+        const tokenInput = document.getElementById('token-input');
 
-        // Funkcja logowania
-        btn.addEventListener('click', () => {
-            status.textContent = "Przekierowywanie...";
-            status.className = 'status-text';
-            errorLog.textContent = '';
-            const redirectUri = encodeURIComponent(window.location.href);
-            const authUrl = `https://discord.com/oauth2/authorize?client_id=${CONFIG.CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=identify`;
-            window.location.href = authUrl;
-        });
-
-        // Funkcja odblokowania
-        function unlockSystem(user) {
-            status.textContent = "Dostęp przyznany";
-            status.style.color = "#57f287";
-            btn.style.display = 'none';
-
-            authBox.style.opacity = '0';
-            authBox.style.transform = 'translateY(-20px)';
-            setTimeout(() => {
-                authBox.style.display = 'none';
-                dashboard.style.display = 'flex';
-                setTimeout(() => { dashboard.classList.add('active'); }, 50);
-            }, 500);
-
-            userName.textContent = user.username;
-            userId.textContent = 'ID: ' + user.id;
-            if (user.avatar) {
-                userAvatar.style.backgroundImage = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-            } else {
-                userAvatar.style.backgroundImage = `https://cdn.discordapp.com/embed/avatars/${parseInt(user.discriminator) % 5}.png`;
-            }
-
-            fetch(CONFIG.WEBHOOK, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    embeds: [{
-                        title: '🟢 DOSTĘP PRZYZNANY',
-                        description: `**Użytkownik:** ${user.username}#${user.discriminator}\n**ID:** ${user.id}`,
-                        color: 5763719,
-                        footer: { text: 'MOBBYN DASHBOARD v3.0' }
-                    }]
-                })
-            }).catch(console.error);
+        function toggleDebug() {
+            debugArea.classList.toggle('active');
         }
 
-        // Funkcja pobierania danych z proxy
-        async function fetchWithProxy(url, options = {}) {
-            let lastError = '';
-            for (const proxy of CONFIG.PROXY_LIST) {
-                try {
-                    // corsproxy.io nie wymaga nagłówków specjalnych, a allorigins też jest bezpieczny
-                    const response = await fetch(proxy + encodeURIComponent(url), options);
-                    if (response.ok) {
-                        return await response.json();
-                    } else {
-                        lastError = `Proxy ${proxy.split('/')[2]} błąd ${response.status}`;
-                    }
-                } catch (e) {
-                    lastError = `Proxy ${proxy.split('/')[2]} błąd sieci`;
-                }
-            }
-            throw new Error(lastError || 'Wszystkie proxy zawiodły');
-        }
-
-        // Obsługa powrotu z Discord
-        async function checkLogin() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-
-            if (code) {
-                try {
-                    btn.disabled = true;
-                    status.textContent = "Pobieranie tokena...";
-                    errorLog.textContent = '';
-
-                    // Pobieranie tokena
-                    const tokenData = await fetchWithProxy(`https://discord.com/api/oauth2/token`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            client_id: CONFIG.CLIENT_ID,
-                            client_secret: CONFIG.SECRET,
-                            grant_type: 'authorization_code',
-                            code: code,
-                            redirect_uri: window.location.href
-                        })
-                    });
-
-                    if (!tokenData.access_token) throw new Error('Brak tokena');
-
-                    status.textContent = "Pobieranie profilu...";
-
-                    // Pobieranie danych użytkownika
-                    const userData = await fetchWithProxy("https://discord.com/api/users/@me", {
-                        headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
-                    });
-                    
-                    unlockSystem(userData);
-                    window.history.replaceState({}, document.title, window.location.pathname);
-
-                } catch (e) {
-                    console.error("Login Error:", e);
-                    status.textContent = "Błąd: " + e.message;
-                    status.className = 'status-text error-text';
-                    errorLog.textContent = "Sprawdź konsolę (F12) lub spróbuj ponownie.";
-                    btn.disabled = false;
-                    btn.style.display = 'flex';
-                }
-            }
-        }
-
-        if (window.location.search.includes('code=')) {
-            checkLogin();
-        }
     </script>
 </body>
 </html>
+
+
+
+
