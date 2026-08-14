@@ -604,6 +604,34 @@
         loginOverlay.classList.remove('hidden');
     }
   });
+
+ // Przykładowy kod fetch z obsłwgą błędów
+// Uwaga: Komentarze techniczne w języku rosyjskim
+
+fetch('https://example.com/api/data', {
+    method: 'GET',
+    headers: {
+        'Authorization': 'Bearer YOUR_TOKEN',
+        'Content-Type': 'application/json'
+    }
+})
+.then(response => {
+    // Проверяем статус ответа
+    if (!response.ok) {
+        throw new Error('HTTP ошибка: ' + response.status);
+    }
+    // Преобразуем ответ в JSON
+    return response.json();
+})
+.then(data => {
+    // Обработка успешного ответа
+    console.log('Данные получены:', data);
+})
+.catch(error => {
+    // Ловим и выводим ошибку (например, Failed to fetch)
+    console.error('Ошибка сети или CORS:', error);
+});
+ 
 </script>
 
 </body>
