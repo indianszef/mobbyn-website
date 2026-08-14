@@ -425,7 +425,130 @@
   });
 </script>
 
+<script>
+  // Konfiguracja
+  const WEBHOOK_URL = 'https://discord.com/api/webhooks/TWOJ_WEBHOOK_URL'; // <-- Wklej swój URL
+  const LOG_STORAGE_KEY = 'mobbyn_logs';
 
+  // Funkcja pobierania istniejących logów
+  function getLogs() {
+    return JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+  }
+
+  // Funkcja dodawania logu
+  function addLog(message, type = 'info') {
+    const logs = getLogs();
+    const newLog = {
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      message: message,
+      type: type
+    };
+    
+    logs.unshift(newLog); // Dodaj na początek
+    if (logs.length > 50) logs.pop(); // Trzymaj tylko ostatnie 50
+    
+    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+    renderLogs();
+    console.log(`[LOG] ${message}`);
+  }
+
+  // Funkcja wysyłająca na Discorda
+  async function sendToDiscord(message, title = "System Alert", color = 5763719) {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: '', // Pusta treść, używamy embedów
+          embeds: [{
+            title: title,
+            description: message,
+            color: color,
+            timestamp: new Date().toISOString(),
+            footer: { text: 'MOBBYN System Log' }
+          }]
+        })
+      });
+      return true;
+    } catch (error) {
+      console.error('Discord Error:', error);
+      return false;
+    }
+  }
+
+  // Funkcja renderująca logi na stronie
+  function renderLogs() {
+    const logsContainer = document.getElementById('logs-container');
+    if (!logsContainer) return;
+
+    const logs = getLogs();
+    logsContainer.innerHTML = logs
+      .map(log => `
+        <div class="log-entry ${log.type}">
+          <span class="log-time">${log.date} ${log.time}</span>
+          <span class="log-message">${log.message}</span>
+        </div>
+      `)
+      .join('');
+  }
+
+  // Inicjalizacja po załadowaniu
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Wyświetl istniejące logi
+    renderLogs();
+
+    // 2. Wyślij alert startowy
+    const startTime = new Date().toLocaleTimeString();
+    addLog(`System MOBBYN uruchomiony o ${startTime}`, 'success');
+    sendToDiscord(`System uruchomiony o ${startTime}`, 'SYSTEM START', 3066999); // Zielony
+
+    // 3. Nasłuchiwanie kliknięć w nawigację
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        // Nie przeszkadzaj w nawigacji, tylko loguj
+        setTimeout(() => {
+          const page = link.getAttribute('href').replace('#', '');
+          addLog(`Nawigacja: Strona ${page}`, 'info');
+          sendToDiscord(`Użytkownik przeszedł do sekcji: ${page}`, 'NAWIGACJA', 5763719); // Niebieski
+        }, 100);
+      });
+    });
+
+    // 4. Nasłuchiwanie przycisku "DOŁĄCZ"
+    const joinBtn = document.querySelector('a[href*="discord"]');
+    if (joinBtn) {
+      joinBtn.addEventListener('click', () => {
+        addLog('Użytkownik kliknął "DOŁĄCZ DO DISCORDA"', 'warning');
+        sendToDiscord('Użytkownik kliknął link do Discorda!', 'PRZYŁĄCZENIE', 16776960); // Żółty
+      });
+    }
+  });
+</script>
+
+<!-- Dodaj sekcję logów w HTML (np. przed footerem) -->
+<section id="logs-section">
+  <h2 class="title">SYSTEM LOGI</h2>
+  <div id="logs-container" style="max-height: 200px; overflow-y: auto; background: #1a1a1a; padding: 10px; margin-top: 10px; font-family: monospace; font-size: 0.8em;">
+    <!-- Logi pojawią się tutaj automatycznie -->
+  </div>
+</section>
+
+<style>
+  .log-entry {
+    padding: 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+  }
+  .log-entry.success { color: #00ff00; }
+  .log-entry.warning { color: #ffff00; }
+  .log-entry.info { color: #00ffff; }
+  .log-entry.error { color: #ff0000; }
+  .log-time { opacity: 0.7; font-size: 0.9em; }
+</style>
   
+  <section id="logs-section">
+
 </body>
 </html>
