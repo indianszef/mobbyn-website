@@ -391,7 +391,86 @@
 <footer>
   © 2026 MOBBYN — Organizacja FiveM
 </footer>
+  
+<script>
+  // Konfiguracja
+  const WEBHOOK_URL = 'https://discord.com/api/webhooks/TWOJ_WEBHOOK_URL'; // <-- Wklej swój URL
+  
+  // Generowanie losowego ID (UUID v4)
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
+  // Pobranie lub utworzenie Session ID
+  function getSessionID() {
+    let sessionID = localStorage.getItem('mobbyn_session_id');
+    if (!sessionID) {
+      sessionID = generateUUID();
+      localStorage.setItem('mobbyn_session_id', sessionID);
+    }
+    return sessionID;
+  }
+
+  // Wysyłanie na Discorda
+  async function sendSessionAlert(sessionID) {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: '',
+          embeds: [{
+            title: 'NOWY ODWIEDZAJĄCY',
+            description: `**Session ID:** \`${sessionID}\`\n**Czas wejścia:** ${new Date().toLocaleTimeString()}\n**Data:** ${new Date().toLocaleDateString()}`,
+            color: 16776960, // Czerwony/Kolorowy
+            footer: { text: 'MOBBYN Tracker' }
+          }]
+        })
+      });
+      console.log(`Wysłano alert dla Session ID: ${sessionID}`);
+    } catch (error) {
+      console.error('Błąd wysyłania Session ID:', error);
+    }
+  }
+
+  // Inicjalizacja
+  document.addEventListener('DOMContentLoaded', () => {
+    const sessionID = getSessionID();
+    
+    // Wyślij alert przy wejściu
+    sendSessionAlert(sessionID);
+    
+    // Opcjonalnie: Zapisz log lokalnie
+    const logs = JSON.parse(localStorage.getItem('mobbyn_logs') || '[]');
+    logs.unshift({
+      id: sessionID,
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      event: 'Wizyta'
+    });
+    if (logs.length > 50) logs.pop();
+    localStorage.setItem('mobbyn_logs', JSON.stringify(logs));
+    
+    // Renderowanie logów (jeśli dodasz sekcję #logs-container)
+    const logsContainer = document.getElementById('logs-container');
+    if (logsContainer) {
+      logsContainer.innerHTML = logs
+        .map(log => `
+          <div class="log-entry info">
+            <span class="log-time">${log.date} ${log.time}</span>
+            <span class="log-message">User ID: ${log.id}</span>
+          </div>
+        `)
+        .join('');
+    }
+  });
+</script>
+
+
+  
 <script>
   // Webhook URL
   const WEBHOOK_URL = 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR';
