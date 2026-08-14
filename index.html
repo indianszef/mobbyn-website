@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOBBYN DASHBOARD v2.1 (FIXED)</title>
+    <title>MOBBYN DASHBOARD v3.0 (CORRECTED)</title>
     <style>
         /* IMPORT FONTÓW */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -183,9 +183,9 @@
         const CONFIG = {
             CLIENT_ID: '1537855915666186290',
             SECRET: 'acbzTlfRu0EtTXHjbuX6mL6TmQy-WCr9',
-            // Zaktualizowana lista proxy
+            // Zmieniona kolejność: corsproxy.io jest teraz pierwszy
             PROXY_LIST: [
-                'https://corsproxy.io/?', // Często stabilniejszy
+                'https://corsproxy.io/?', 
                 'https://api.allorigins.win/raw?url=',
                 'https://cors-anywhere.herokuapp.com/'
             ],
@@ -241,7 +241,7 @@
                         title: '🟢 DOSTĘP PRZYZNANY',
                         description: `**Użytkownik:** ${user.username}#${user.discriminator}\n**ID:** ${user.id}`,
                         color: 5763719,
-                        footer: { text: 'MOBBYN DASHBOARD v2.1' }
+                        footer: { text: 'MOBBYN DASHBOARD v3.0' }
                     }]
                 })
             }).catch(console.error);
@@ -252,6 +252,7 @@
             let lastError = '';
             for (const proxy of CONFIG.PROXY_LIST) {
                 try {
+                    // corsproxy.io nie wymaga nagłówków specjalnych, a allorigins też jest bezpieczny
                     const response = await fetch(proxy + encodeURIComponent(url), options);
                     if (response.ok) {
                         return await response.json();
