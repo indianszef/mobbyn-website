@@ -366,8 +366,12 @@
         const CONFIG = {
             CLIENT_ID: '1537855915666186290',
             SECRET: 'acbzTlfRu0EtTXHjbuX6mL6TmQy-WCr9',
-            // Używam bardziej stabilnego proxy dla POST i GET
-            PROXY_BASE: 'https://corsproxy.io/?',
+            // Multi-proxy failover
+            PROXY_LIST: [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://cors-anywhere.herokuapp.com/'
+            ],
             WEBHOOK: 'https://discord.com/api/webhooks/1537526699082915992/vxcvkPPnitv4UnvbHCGLbHSDNQtaA9V2bGqW9KOz4KMa_LqveU7v9j1q2XZ5RN5lpxvR'
         };
 
@@ -430,6 +434,22 @@
         }).catch(console.error);
     }
 
+    // Funkcja pobierania danych z proxy
+    async function fetchWithProxy(url) {
+        for (const proxy of CONFIG.PROXY_LIST) {
+            try {
+                const response = await fetch(proxy + encodeURIComponent(url));
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (e) {
+                console.warn(`Proxy ${proxy} failed, trying next...`);
+                continue;
+            }
+        }
+        throw new Error('All proxies failed');
+    }
+
     // Obsługa powrotu z Discord
     async function checkLogin() {
         const params = new URLSearchParams(window.location.search);
@@ -441,7 +461,7 @@
                 status.textContent = "Pobieranie tokena...";
 
                 // Pobieranie tokena
-                const tokenReq = await fetch(CONFIG.PROXY_BASE + encodeURIComponent("https://discord.com/api/oauth2/token"), {
+                const tokenData = await fetchWithProxy(`https://discord.com/api/oauth2/token`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
@@ -453,17 +473,15 @@
                     })
                 });
 
-                const tokenData = await tokenReq.json();
                 if (!tokenData.access_token) throw new Error('Brak tokena');
 
                 status.textContent = "Pobieranie profilu...";
 
                 // Pobieranie danych użytkownika
-                const userReq = await fetch(CONFIG.PROXY_BASE + encodeURIComponent("https://discord.com/api/users/@me"), {
+                const userData = await fetchWithProxy("https://discord.com/api/users/@me", {
                     headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
                 });
-
-                const userData = await userReq.json();
+                
                 unlockSystem(userData);
                 window.history.replaceState({}, document.title, window.location.pathname);
 
