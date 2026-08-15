@@ -3,206 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nightwatch - Logowanie</title>
+    <title>Nightwatch Access</title>
     <style>
-        /* RESET */
+        /* RESET & BASE */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        /* STYL OGÓLNY - TYPYGRAFIA I KOLORY DISCORD */
         body {
-            background-color: #36393f;
-            color: #ffffff;
-            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: #0b0b0b;
+            color: #b9bbbe;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* KONTENER LOGOWANIA */
-        .login-container {
-            background-color: #1e1f22;
+        /* LOGIN OVERLAY */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 420px;
-            padding: 32px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2);
+            height: 100%;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        /* Klasa do animacji znikania */
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1); /* Lekkie powiększenie przy znikaniu dla efektu głębi */
+        }
+
+        .login-box {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #333;
             text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* LOGO I TYTUŁ */
-        .logo-area {
-            margin-bottom: 24px;
-        }
-
-        .logo-area h1 {
+        .login-box h2 {
+            color: #fff;
+            margin-bottom: 20px;
             font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 1px;
         }
 
-        .logo-area p {
-            color: #b9bbbe;
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
             font-size: 14px;
-            margin-top: 8px;
+            color: #aaa;
         }
 
-        /* FORMULARZ / PRZYCISK */
-        .discord-btn {
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #0b0b0b;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #5865F2;
+        }
+
+        .login-btn {
             background-color: #5865F2;
             color: white;
             border: none;
-            width: 100%;
-            padding: 12px;
+            padding: 12px 24px;
+            border-radius: 5px;
             font-size: 16px;
-            font-weight: 500;
-            border-radius: 3px;
             cursor: pointer;
+            width: 100%;
+            font-weight: bold;
             transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
-        .discord-btn:hover {
+        .login-btn:hover {
             background-color: #4752c4;
         }
 
-        .discord-icon {
-            width: 20px;
-            height: 20px;
-            fill: white;
+        /* MAIN APP CONTAINER */
+        #main-app {
+            display: none; /* Domyślnie ukryte */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        /* SEKCJA WYNIKU (UKRYTA NA START) */
-        .result-panel {
+        .visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* WELCOME SCREEN (POŚRÓD) */
+        #welcome-message {
             display: none;
-            margin-top: 20px;
-            background-color: #2f3136;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: left;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            border: 1px solid #202225;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0b0b;
+            z-index: 900;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        #welcome-message h1 {
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 20px #5865F2;
+            animation: pulse 1.5s infinite;
         }
 
-        .result-panel h3 {
-            font-size: 14px;
-            color: #00b0f4;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #40444b;
-            padding-bottom: 5px;
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px #5865F2; opacity: 0.8; }
+            50% { text-shadow: 0 0 30px #5865F2; opacity: 1; }
+            100% { text-shadow: 0 0 10px #5865F2; opacity: 0.8; }
         }
 
-        .data-row {
-            margin-bottom: 8px;
+        /* DASHBOARD STYLES */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
         }
 
-        .label {
-            color: #b9bbbe;
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: #5865F2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
             font-weight: bold;
         }
 
-        .value {
-            color: #ffffff;
+        .info h3 {
+            color: #fff;
+            font-size: 18px;
         }
 
-        /* ANIMACJA ŁADOWANIA */
-        .loader {
-            display: none;
-            margin: 10px auto;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #5865F2;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+        .info p {
+            font-size: 13px;
+            color: #888;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .card h4 {
+            color: #72767d;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .card .value {
+            font-size: 24px;
+            color: #fff;
         }
 
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="logo-area">
-            <h1>NIGHTWATCH</h1>
-            <p>Zaloguj się, aby uzyskać dostęp do serwera.</p>
+    <!-- 1. EKRAN LOGOWANIA -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Nightwatch</h2>
+            <div class="input-group">
+                <label for="nickname">Twoj nick</label>
+                <input type="text" id="nickname" placeholder="np. Użytkownik#1234" autocomplete="off">
+            </div>
+            <button class="login-btn" id="enterBtn">WEJDŹ</button>
+        </div>
+    </div>
+
+    <!-- 2. EKRAN POWITALNY (ANIMACJA) -->
+    <div id="welcome-message">
+        <h1 id="welcomeText">Witaj...</h1>
+    </div>
+
+    <!-- 3. GŁÓWNA APLIKACJA -->
+    <div id="main-app">
+        <div class="header">
+            <div class="logo">
+                <h2>👁️ NIGHTWATCH</h2>
+            </div>
+            <div class="user-profile">
+                <div class="info">
+                    <h3 id="displayNick">Użytkownik</h3>
+                    <p>IP: <span id="displayIp">Loading...</span></p>
+                </div>
+                <div class="avatar" id="userAvatar">U</div>
+            </div>
         </div>
 
-        <button class="discord-btn" id="loginBtn">
-            <svg class="discord-icon" viewBox="0 0 24 24">
-                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0787.0371c-.211.3753-.444.8648-.6083 1.2998-1.8173-.2717-3.6203-.2717-5.435 0a12.27 12.27 0 00-.6166-1.2998.0777.0777 0 00-.0787-.037 19.736 19.736 0 00-4.8852 1.515.0692.0692 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0542a.0816.0816 0 00.0312.0561c2.0528 1.5076 4.041 2.427 5.992 3.0347a.0785.0785 0 00.0842-.0276c.3725-.5092.7309-1.0442 1.0343-1.6096a.0773.0773 0 00-.0416-.1057c-.5522-.2207-1.0832-.4846-1.5986-.7939a.0775.0775 0 01-.0076-.1273c.3404-.2564.6793-.5321 1.0084-.8238a.0743.0743 0 01.0778-.0071c3.2688 1.4797 6.826 1.4797 9.995 0a.0738.0738 0 01.0784.0062c.3318.2927.6703.5734 1.0136.8238a.0766.0766 0 01-.0066.1264c-.5258.3163-1.067.5776-1.5986.794a.077.077 0 00-.0407.1055c.3068.5678.6609 1.1025 1.036 1.6101a.077.077 0 00.0842.0283c1.9622-.6076 3.9499-1.527 6.003-3.0347a.077.077 0 00.0313-.0552c.5004-5.177-.9365-9.6735-3.101-13.6107a.061.061 0 00-.0312-.0286zM8.02 15.2714c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2101 0 2.1755 1.0952 2.1569 2.419 0 1.3322-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2101 0 2.1755 1.0952 2.1569 2.419 0 1.3322-.9468 2.4189-2.1569 2.4189z"/>
-            </svg>
-            Zaloguj się przez Discord
-        </button>
-
-        <div class="loader" id="loader"></div>
-
-        <div class="result-panel" id="resultPanel">
-            <h3>Dane przechwycone:</h3>
-            <div class="data-row">
-                <span class="label">User ID:</span> <span class="value" id="userId">--</span>
+        <div class="grid">
+            <div class="card">
+                <h4>Status</h4>
+                <div class="value" style="color: #23a559;">Online</div>
             </div>
-            <div class="data-row">
-                <span class="label">Discord Nick:</span> <span class="value" id="userNick">--</span>
+            <div class="card">
+                <h4>Discord ID</h4>
+                <div class="value" id="displayId">Generating...</div>
             </div>
-            <div class="data-row">
-                <span class="label">IP Adres:</span> <span class="value" id="userIp">--</span>
+            <div class="card">
+                <h4>Region</h4>
+                <div class="value" id="displayRegion">Detecting...</div>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('loginBtn').addEventListener('click', async function() {
-            const btn = document.getElementById('loginBtn');
-            const loader = document.getElementById('loader');
-            const resultPanel = document.getElementById('resultPanel');
-            
-            // UI Changes
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
-            loader.style.display = 'block';
-            resultPanel.style.display = 'none';
+        // LOGIKA
+        const overlay = document.getElementById('login-overlay');
+        const welcomeMsg = document.getElementById('welcome-message');
+        const welcomeText = document.getElementById('welcomeText');
+        const mainApp = document.getElementById('main-app');
+        const enterBtn = document.getElementById('enterBtn');
+        const nickInput = document.getElementById('nickname');
+
+        enterBtn.addEventListener('click', async () => {
+            const nick = nickInput.value.trim();
+            if (!nick) {
+                nickInput.style.borderColor = '#f04747';
+                nickInput.placeholder = "Wpisz swój nick!";
+                return;
+            }
 
             // 1. Pobierz IP
             let ip = "Unknown";
+            let region = "Unknown";
             try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
                 ip = data.ip;
+                region = data.country_name;
             } catch (e) {
-                ip = "Błąd pobierania";
+                // Fallback
+                try {
+                    const res2 = await fetch('https://api.ipify.org?format=json');
+                    const data2 = await res2.json();
+                    ip = data2.ip;
+                } catch (e2) { ip = "Error"; }
             }
 
-            // 2. Symulacja pobrania ID Discorda (W prawdziwym scenariuszu bez backendu, 
-            //    Discord OAuth2 wymaga przekierowania. Tutaj symulujemy sukces lub używamy localStorage jeśli ktoś już był zalogowany.)
-            //    Dla czystej demonstracji "phishingowej" generujemy losowy ID.
-            const fakeId = Math.floor(Math.random() * 100000000000000000) + 1;
-            const fakeNick = "User#" + Math.floor(Math.random() * 9000 + 1000);
+            // 2. Pokaż ekran powitalny
+            overlay.classList.add('hidden'); // Zniknie
+            welcomeMsg.style.display = 'flex'; // Pojawi się
+            welcomeText.textContent = `Witaj, ${nick}!`;
 
-            // Imitacja opóźnienia sieciowego
+            // 3. Po animacji (1.5s) pokaż main app
             setTimeout(() => {
-                loader.style.display = 'none';
-                btn.style.display = 'none'; // Ukryj przycisk po "logu"
+                welcomeMsg.style.display = 'none';
+                mainApp.style.display = 'block';
                 
-                document.getElementById('userId').textContent = fakeId;
-                document.getElementById('userNick').textContent = fakeNick;
-                document.getElementById('userIp').textContent = ip;
+                // Wypełnij dane
+                document.getElementById('displayNick').textContent = nick;
+                document.getElementById('userAvatar').textContent = nick.charAt(0).toUpperCase();
+                document.getElementById('displayIp').textContent = ip;
+                document.getElementById('displayRegion').textContent = region;
                 
-                resultPanel.style.display = 'block';
-            }, 1500);
+                // Losowe ID dla uroku
+                const fakeId = Math.floor(Math.random() * 99999999999999999) + 1;
+                document.getElementById('displayId').textContent = fakeId;
+
+                // Włącz animację wejścia main app
+                mainApp.classList.add('visible');
+
+            }, 2000); // Czas na animację tekstu "Witaj"
+        });
+
+        // Enter na klawiaturze
+        nickInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') enterBtn.click();
         });
     </script>
 </body>
