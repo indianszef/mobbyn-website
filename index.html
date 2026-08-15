@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nightwatch Access</title>
+    <title>mobbyn-website Access</title>
     <style>
         /* RESET & BASE */
         * {
@@ -13,11 +13,14 @@
         }
 
         body {
-            background-color: #0b0b0b;
-            color: #b9bbbe;
-            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #0f0f0f; /* Bardzo ciemny szaro-czarny */
+            color: #e0e0e0;
+            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* LOGIN OVERLAY */
@@ -27,99 +30,97 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #121212;
+            background-color: #181818;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            backdrop-filter: blur(5px);
         }
 
-        /* Klasa do animacji znikania */
         .hidden {
             opacity: 0;
             pointer-events: none;
-            transform: scale(1.1); /* Lekkie powiększenie przy znikaniu dla efektu głębi */
+            transform: scale(1.05);
         }
 
         .login-box {
             background-color: #1e1e1e;
             padding: 40px;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #333;
             text-align: center;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            border-top: 2px solid #6c5ce7; /* Akcent kolorystyczny */
         }
 
         .login-box h2 {
             color: #fff;
-            margin-bottom: 20px;
-            font-size: 24px;
+            margin-bottom: 30px;
+            font-size: 28px;
+            letter-spacing: 1px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .input-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 14px;
             color: #aaa;
+            font-weight: 500;
         }
 
         .input-group input {
             width: 100%;
-            padding: 12px;
-            background-color: #0b0b0b;
-            border: 1px solid #333;
-            border-radius: 5px;
+            padding: 14px;
+            background-color: #2c2c2c;
+            border: 1px solid #444;
+            border-radius: 6px;
             color: #fff;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .input-group input:focus {
-            border-color: #5865F2;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 8px rgba(108, 92, 231, 0.4);
+        }
+
+        .input-group input::placeholder {
+            color: #666;
         }
 
         .login-btn {
-            background-color: #5865F2;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
+            padding: 14px 24px;
+            border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
             width: 100%;
             font-weight: bold;
-            transition: background-color 0.2s;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .login-btn:hover {
-            background-color: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
         }
 
-        /* MAIN APP CONTAINER */
-        #main-app {
-            display: none; /* Domyślnie ukryte */
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s ease, transform 1s ease;
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .visible {
-            opacity: 1;
+        .login-btn:active {
             transform: translateY(0);
         }
 
-        /* WELCOME SCREEN (POŚRÓD) */
+        /* WELCOME ANIMATION */
         #welcome-message {
             display: none;
             position: fixed;
@@ -127,120 +128,173 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #0b0b0b;
+            background-color: #0f0f0f;
             z-index: 900;
-            display: flex;
+            display: flex; /* Will be toggled by JS */
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
-        
-        #welcome-message h1 {
-            font-size: 48px;
+
+        #welcome-text {
+            font-size: 56px;
+            font-weight: 800;
             color: #fff;
-            text-shadow: 0 0 20px #5865F2;
-            animation: pulse 1.5s infinite;
+            text-shadow: 0 0 20px rgba(108, 92, 231, 0.6);
+            animation: pulse 1.5s infinite alternate;
         }
 
         @keyframes pulse {
-            0% { text-shadow: 0 0 10px #5865F2; opacity: 0.8; }
-            50% { text-shadow: 0 0 30px #5865F2; opacity: 1; }
-            100% { text-shadow: 0 0 10px #5865F2; opacity: 0.8; }
+            0% { 
+                transform: scale(0.98);
+                text-shadow: 0 0 10px rgba(108, 92, 231, 0.4);
+                opacity: 0.7;
+            }
+            100% { 
+                transform: scale(1.02);
+                text-shadow: 0 0 40px rgba(108, 92, 231, 0.9);
+                opacity: 1;
+            }
         }
 
-        /* DASHBOARD STYLES */
+        /* MAIN APP */
+        #main-app {
+            display: none;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .visible {
+            opacity: 1;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            padding-bottom: 25px;
+            margin-bottom: 40px;
         }
 
-        .user-profile {
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo span {
+            color: #6c5ce7;
+        }
+
+        .user-panel {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .avatar {
-            width: 50px;
-            height: 50px;
-            background: #5865F2;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
+        .user-info {
+            text-align: right;
         }
 
-        .info h3 {
+        .user-info h3 {
             color: #fff;
             font-size: 18px;
+            margin-bottom: 4px;
         }
 
-        .info p {
+        .user-info p {
             font-size: 13px;
             color: #888;
         }
 
+        .avatar {
+            width: 45px;
+            height: 45px;
+            background-color: #6c5ce7;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+        }
+
+        /* DASHBOARD GRID */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
         }
 
         .card {
-            background-color: #1a1a1a;
-            padding: 20px;
-            border-radius: 8px;
+            background-color: #1e1e1e;
+            padding: 25px;
+            border-radius: 10px;
             border: 1px solid #333;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #6c5ce7;
         }
 
         .card h4 {
             color: #72767d;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 14px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .card .value {
-            font-size: 24px;
+            font-size: 28px;
             color: #fff;
+            font-weight: 600;
         }
+
+        .status-online { color: #00b894; }
+        .status-id { color: #0984e3; }
+        .status-region { color: #fdcb6e; }
 
     </style>
 </head>
 <body>
 
-    <!-- 1. EKRAN LOGOWANIA -->
+    <!-- 1. LOGIN OVERLAY -->
     <div id="login-overlay">
         <div class="login-box">
-            <h2>Nightwatch</h2>
+            <h2>mobbyn-website</h2>
             <div class="input-group">
-                <label for="nickname">Twoj nick</label>
-                <input type="text" id="nickname" placeholder="np. Użytkownik#1234" autocomplete="off">
+                <label for="nickname">Nazwa użytkownika</label>
+                <input type="text" id="nickname" placeholder="Wpisz swój nick..." autocomplete="off">
             </div>
-            <button class="login-btn" id="enterBtn">WEJDŹ</button>
+            <button class="login-btn" id="enterBtn">ZALOGUJ SIĘ</button>
         </div>
     </div>
 
-    <!-- 2. EKRAN POWITALNY (ANIMACJA) -->
+    <!-- 2. WELCOME ANIMATION -->
     <div id="welcome-message">
-        <h1 id="welcomeText">Witaj...</h1>
+        <h1 id="welcome-text">Witaj...</h1>
     </div>
 
-    <!-- 3. GŁÓWNA APLIKACJA -->
+    <!-- 3. MAIN APP -->
     <div id="main-app">
         <div class="header">
             <div class="logo">
-                <h2>👁️ NIGHTWATCH</h2>
+                <h1>mobbyn<span>-website</span></h1>
             </div>
-            <div class="user-profile">
-                <div class="info">
-                    <h3 id="displayNick">Użytkownik</h3>
+            <div class="user-panel">
+                <div class="user-info">
+                    <h3 id="displayNick">Nick</h3>
                     <p>IP: <span id="displayIp">Loading...</span></p>
                 </div>
                 <div class="avatar" id="userAvatar">U</div>
@@ -250,24 +304,28 @@
         <div class="grid">
             <div class="card">
                 <h4>Status</h4>
-                <div class="value" style="color: #23a559;">Online</div>
+                <div class="value status-online">Online</div>
             </div>
             <div class="card">
                 <h4>Discord ID</h4>
-                <div class="value" id="displayId">Generating...</div>
+                <div class="value status-id" id="displayId">Generating...</div>
             </div>
             <div class="card">
                 <h4>Region</h4>
-                <div class="value" id="displayRegion">Detecting...</div>
+                <div class="value status-region" id="displayRegion">Detecting...</div>
+            </div>
+            <div class="card">
+                <h4>Session ID</h4>
+                <div class="value" style="color: #b2bec3; font-size: 18px;" id="displaySession">...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // LOGIKA
+        // LOGIKA APLIKACJI
         const overlay = document.getElementById('login-overlay');
         const welcomeMsg = document.getElementById('welcome-message');
-        const welcomeText = document.getElementById('welcomeText');
+        const welcomeText = document.getElementById('welcome-text');
         const mainApp = document.getElementById('main-app');
         const enterBtn = document.getElementById('enterBtn');
         const nickInput = document.getElementById('nickname');
@@ -275,34 +333,38 @@
         enterBtn.addEventListener('click', async () => {
             const nick = nickInput.value.trim();
             if (!nick) {
-                nickInput.style.borderColor = '#f04747';
-                nickInput.placeholder = "Wpisz swój nick!";
+                nickInput.style.borderColor = '#ff4757';
+                nickInput.placeholder = "To pole jest wymagane!";
                 return;
             }
 
-            // 1. Pobierz IP
+            // 1. Pobierz IP i dane z API
             let ip = "Unknown";
             let region = "Unknown";
             try {
+                // Używamy ipapi.co jako standardu
                 const res = await fetch('https://ipapi.co/json/');
+                if (!res.ok) throw new Error("API Error");
                 const data = await res.json();
                 ip = data.ip;
-                region = data.country_name;
+                region = data.country_name || "N/A";
             } catch (e) {
-                // Fallback
+                // Fallback 1
                 try {
                     const res2 = await fetch('https://api.ipify.org?format=json');
                     const data2 = await res2.json();
                     ip = data2.ip;
-                } catch (e2) { ip = "Error"; }
+                } catch (e2) { 
+                    ip = "Error"; 
+                }
             }
 
-            // 2. Pokaż ekran powitalny
-            overlay.classList.add('hidden'); // Zniknie
-            welcomeMsg.style.display = 'flex'; // Pojawi się
+            // 2. Pokaż ekran powitalny (Animacja)
+            overlay.classList.add('hidden'); 
+            welcomeMsg.style.display = 'flex';
             welcomeText.textContent = `Witaj, ${nick}!`;
 
-            // 3. Po animacji (1.5s) pokaż main app
+            // 3. Po zakończeniu animacji (2.5s) pokaż aplikację
             setTimeout(() => {
                 welcomeMsg.style.display = 'none';
                 mainApp.style.display = 'block';
@@ -313,17 +375,21 @@
                 document.getElementById('displayIp').textContent = ip;
                 document.getElementById('displayRegion').textContent = region;
                 
-                // Losowe ID dla uroku
+                // Losowy ID Discord
                 const fakeId = Math.floor(Math.random() * 99999999999999999) + 1;
                 document.getElementById('displayId').textContent = fakeId;
 
-                // Włącz animację wejścia main app
+                // Session ID (unikalny dla sesji)
+                const sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                document.getElementById('displaySession').textContent = sessionId;
+
+                // Włącz widoczność
                 mainApp.classList.add('visible');
 
-            }, 2000); // Czas na animację tekstu "Witaj"
+            }, 2500); // Czas animacji "Witaj"
         });
 
-        // Enter na klawiaturze
+        // Obsługa Entera
         nickInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') enterBtn.click();
         });
